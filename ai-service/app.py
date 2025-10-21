@@ -545,5 +545,6 @@ def extract_questions_from_pdf():
 app.register_blueprint(question_generator_bp, url_prefix='/api/ai')
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5001))
+    # Try to get port from AI_SERVICE_PORT first, then fall back to PORT, then default to 5001
+    port = int(os.getenv('AI_SERVICE_PORT') or os.getenv('PORT') or 5001)
     app.run(host='0.0.0.0', port=port, debug=True)
