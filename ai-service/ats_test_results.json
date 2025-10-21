@@ -1,0 +1,89 @@
+{
+  "ai_insights": {
+    "analysis": "Match Score: 75%\n\nReasoning: The candidate shows relevant experience and skills. Manual review recommended.",
+    "cultural_fit": "Not available",
+    "experience_relevance": "Not available",
+    "hiring_recommendation": "Not available",
+    "red_flags": "Not available",
+    "score": 75,
+    "technical_fit": "Not available"
+  },
+  "ats_score": 88,
+  "education_verification": {
+    "qualifications_found": [
+      "Computer Science",
+      "Bachelor"
+    ],
+    "score": 100
+  },
+  "experience_analysis": {
+    "level": "senior",
+    "match": true,
+    "required_level": "senior",
+    "score": 100,
+    "years_found": 6,
+    "years_required": 5
+  },
+  "gaps": [
+    "No major gaps identified"
+  ],
+  "interview_questions": [
+    "Can you describe your experience with react?",
+    "Can you describe your experience with node.js?",
+    "Can you describe your experience with terraform?",
+    "Describe a challenging project you've worked on recently.",
+    "How do you stay updated with industry trends?"
+  ],
+  "keyword_match": {
+    "matched_keywords": [
+      "applications",
+      "architecture",
+      "azure",
+      "bachelor",
+      "backend",
+      "cloud",
+      "code",
+      "computer",
+      "cross",
+      "databases",
+      "developers",
+      "development",
+      "devops",
+      "docker",
+      "engineer",
+      "experience",
+      "experienced",
+      "frontend",
+      "functional",
+      "infrastructure"
+    ],
+    "score": 51.76
+  },
+  "recommendation": "Highly Recommended",
+  "skill_analysis": {
+    "matched_skills": [
+      "react",
+      "node.js",
+      "terraform",
+      "microservices",
+      "kubernetes",
+      "azure",
+      "ci/cd",
+      "devops",
+      "javascript",
+      "aws",
+      "python",
+      "docker",
+      "sql"
+    ],
+    "missing_skills": [],
+    "skill_match_percentage": 100.0,
+    "total_skills_found": 34
+  },
+  "strengths": [
+    "Strong technical skills match (13 key skills)",
+    "Relevant experience (6 years)",
+    "Meets education requirements",
+    "Diverse technical skill set"
+  ]
+}

@@ -1,0 +1,21 @@
+# AI Service Dependencies (Ollama Version - No llama-cpp-python needed!)
+flask==3.0.0
+flask-cors==4.0.0
+python-dotenv==1.0.0
+
+# Document Processing
+PyPDF2==3.0.1
+python-docx==1.1.0
+
+# Utilities
+requests==2.31.0
+
+# AI Models
+google-generativeai>=0.3.0
+huggingface-hub>=0.20.0
+
+# Face Recognition (DeepFace - works on Python 3.13!)
+deepface
+opencv-python
+tensorflow
+tf-keras

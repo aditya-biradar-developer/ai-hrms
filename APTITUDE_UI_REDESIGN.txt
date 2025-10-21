@@ -1,0 +1,219 @@
+APTITUDE CONFIGURATION UI - NEW DESIGN
+
+Replace lines 288-395 in RoundQuestionGenerator.jsx with:
+
+          {/* Aptitude Configuration */}
+          {roundType === 'aptitude' && (
+            <div className="space-y-6">
+              {/* Topics Selection */}
+              <div>
+                <Label className="text-lg font-semibold mb-3 block">Select Topics</Label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {aptitudeTopics.map(topic => (
+                    <label
+                      key={topic.id}
+                      className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        config.aptitude.topics.includes(topic.id)
+                          ? 'border-purple-500 bg-purple-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={config.aptitude.topics.includes(topic.id)}
+                        onChange={() => toggleTopic(topic.id)}
+                        className="mt-1 w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium">{topic.name}</div>
+                        <div className="text-sm text-gray-600">{topic.description}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Difficulty Levels Selection */}
+              <div>
+                <Label className="text-lg font-semibold mb-3 block">Select Difficulty Levels & Question Count</Label>
+                <div className="space-y-3">
+                  {/* Easy */}
+                  <div className={`border-2 rounded-lg transition-all ${
+                    config.aptitude.difficulties.easy.selected
+                      ? 'border-green-500 bg-green-50'
+                      : 'border-gray-200'
+                  }`}>
+                    <label className="flex items-center gap-3 p-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.aptitude.difficulties.easy.selected}
+                        onChange={() => toggleDifficulty('easy')}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-green-700">Easy</span>
+                          <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">Basic concepts</span>
+                        </div>
+                        <div className="text-sm text-gray-600">Entry-level questions for basic understanding</div>
+                      </div>
+                    </label>
+                    {config.aptitude.difficulties.easy.selected && (
+                      <div className="px-4 pb-4 border-t border-green-200">
+                        <Label className="text-sm mb-2 block mt-3">Number of Easy Questions:</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="50"
+                          value={config.aptitude.difficulties.easy.count}
+                          onChange={(e) => setDifficultyCount('easy', e.target.value)}
+                          className="w-full"
+                          placeholder="e.g., 10"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Medium */}
+                  <div className={`border-2 rounded-lg transition-all ${
+                    config.aptitude.difficulties.medium.selected
+                      ? 'border-yellow-500 bg-yellow-50'
+                      : 'border-gray-200'
+                  }`}>
+                    <label className="flex items-center gap-3 p-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.aptitude.difficulties.medium.selected}
+                        onChange={() => toggleDifficulty('medium')}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-yellow-700">Medium</span>
+                          <span className="text-xs px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full">Intermediate level</span>
+                        </div>
+                        <div className="text-sm text-gray-600">Mid-level questions requiring some experience</div>
+                      </div>
+                    </label>
+                    {config.aptitude.difficulties.medium.selected && (
+                      <div className="px-4 pb-4 border-t border-yellow-200">
+                        <Label className="text-sm mb-2 block mt-3">Number of Medium Questions:</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="50"
+                          value={config.aptitude.difficulties.medium.count}
+                          onChange={(e) => setDifficultyCount('medium', e.target.value)}
+                          className="w-full"
+                          placeholder="e.g., 10"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Hard */}
+                  <div className={`border-2 rounded-lg transition-all ${
+                    config.aptitude.difficulties.hard.selected
+                      ? 'border-red-500 bg-red-50'
+                      : 'border-gray-200'
+                  }`}>
+                    <label className="flex items-center gap-3 p-4 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={config.aptitude.difficulties.hard.selected}
+                        onChange={() => toggleDifficulty('hard')}
+                        className="w-4 h-4"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-red-700">Hard</span>
+                          <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full">Advanced problems</span>
+                        </div>
+                        <div className="text-sm text-gray-600">Expert-level questions for deep understanding</div>
+                      </div>
+                    </label>
+                    {config.aptitude.difficulties.hard.selected && (
+                      <div className="px-4 pb-4 border-t border-red-200">
+                        <Label className="text-sm mb-2 block mt-3">Number of Hard Questions:</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="50"
+                          value={config.aptitude.difficulties.hard.count}
+                          onChange={(e) => setDifficultyCount('hard', e.target.value)}
+                          className="w-full"
+                          placeholder="e.g., 10"
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Time per Question */}
+              <div>
+                <Label>Time per Question (seconds)</Label>
+                <Input
+                  type="number"
+                  min="30"
+                  max="180"
+                  value={config.aptitude.timePerQuestion}
+                  onChange={(e) => setConfig(prev => ({
+                    ...prev,
+                    aptitude: { ...prev.aptitude, timePerQuestion: parseInt(e.target.value) || 60 }
+                  }))}
+                  className="mt-1"
+                />
+              </div>
+
+              {/* Generation Summary */}
+              {(config.aptitude.topics.length > 0 || 
+                config.aptitude.difficulties.easy.selected || 
+                config.aptitude.difficulties.medium.selected || 
+                config.aptitude.difficulties.hard.selected) && (
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-blue-900 mb-2">📊 Generation Summary:</h4>
+                  <div className="space-y-2 text-sm text-blue-800">
+                    {config.aptitude.topics.length > 0 && (
+                      <div>
+                        <strong>Selected Topics:</strong>
+                        <ul className="ml-4 mt-1">
+                          {config.aptitude.topics.map(topicId => {
+                            const topic = aptitudeTopics.find(t => t.id === topicId);
+                            return <li key={topicId}>• {topic?.name}</li>;
+                          })}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    {(config.aptitude.difficulties.easy.selected || 
+                      config.aptitude.difficulties.medium.selected || 
+                      config.aptitude.difficulties.hard.selected) && (
+                      <div>
+                        <strong>Difficulty Breakdown:</strong>
+                        <ul className="ml-4 mt-1">
+                          {config.aptitude.difficulties.easy.selected && (
+                            <li>• <span className="text-green-700 font-medium">Easy:</span> {config.aptitude.difficulties.easy.count} questions</li>
+                          )}
+                          {config.aptitude.difficulties.medium.selected && (
+                            <li>• <span className="text-yellow-700 font-medium">Medium:</span> {config.aptitude.difficulties.medium.count} questions</li>
+                          )}
+                          {config.aptitude.difficulties.hard.selected && (
+                            <li>• <span className="text-red-700 font-medium">Hard:</span> {config.aptitude.difficulties.hard.count} questions</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                    
+                    <div className="pt-2 border-t border-blue-200 font-semibold">
+                      Total Questions: {
+                        (config.aptitude.difficulties.easy.selected ? config.aptitude.difficulties.easy.count : 0) +
+                        (config.aptitude.difficulties.medium.selected ? config.aptitude.difficulties.medium.count : 0) +
+                        (config.aptitude.difficulties.hard.selected ? config.aptitude.difficulties.hard.count : 0)
+                      }
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}

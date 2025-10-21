@@ -1,0 +1,58 @@
+SAMPLE INTERVIEW QUESTIONS
+For Testing PDF Extraction Feature
+
+Create a PDF from this text to test the feature!
+
+==========================================
+
+Interview Questions - Frontend Developer Position
+
+1. Tell me about your experience with React and modern JavaScript frameworks.
+
+2. What is the difference between let, const, and var in JavaScript?
+
+3. Explain what React hooks are and give examples of when you would use useState and useEffect.
+
+4. Code Question: What will be the output of the following code?
+
+const numbers = [1, 2, 3, 4, 5];
+const doubled = numbers.map(x => x * 2);
+console.log(doubled);
+
+Expected Answer: [2, 4, 6, 8, 10]
+
+5. Behavioral Question: Describe a challenging bug you encountered in a project and how you debugged it. What tools did you use?
+
+6. What are the key differences between SQL and NoSQL databases? When would you use each?
+
+7. Technical Question: Explain how you would optimize the performance of a slow-loading web page. Mention at least 3 techniques.
+
+8. Code Challenge: Write a function to check if a string is a palindrome.
+
+Expected Answer: 
+function isPalindrome(str) {
+  const cleaned = str.toLowerCase().replace(/[^a-z0-9]/g, '');
+  return cleaned === cleaned.split('').reverse().join('');
+}
+
+9. What is your experience with version control systems like Git? Explain branching strategies.
+
+10. Final Question: Why do you want to work at our company and what unique skills do you bring to this role?
+
+==========================================
+
+TIPS FOR CREATING YOUR PDF:
+- Use clear question numbering (1., 2., Q1, Question 1, etc.)
+- Separate questions with blank lines
+- Use "Code:" or "Code Question:" for coding problems
+- Add "Expected Answer:" or "Answer:" for reference
+- Mention question type if needed (Technical, Behavioral, etc.)
+- Keep code formatting clear with proper indentation
+
+==========================================
+
+To convert this to PDF:
+1. Copy this text
+2. Paste into Google Docs or Word
+3. Export/Save as PDF
+4. Upload to the Custom Questions modal!
