@@ -1,0 +1,95 @@
+services:
+  # Backend Service
+  - type: web
+    name: ai-hrms-backend
+    env: node
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && PORT=$BACKEND_PORT node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_PORT
+        value: 5000
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRE
+        value: 7d
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: COMPANY_NAME
+        value: AI HRMS
+      - key: AI_SERVICE_URL
+        value: https://ai-hrms-ai-service.onrender.com
+      - key: FRONTEND_URL
+        value: https://ai-hrms-frontend.onrender.com
+    healthCheckPath: /api/health
+    autoDeploy: true
+
+  # AI Service
+  - type: web
+    name: ai-hrms-ai-service
+    env: python
+    plan: free
+    buildCommand: cd ai-service && pip install -r requirements.txt
+    startCommand: cd ai-service && PORT=$AI_SERVICE_PORT python app.py
+    envVars:
+      - key: FLASK_ENV
+        value: production
+      - key: AI_SERVICE_PORT
+        value: 5001
+      - key: USE_OLLAMA
+        value: false
+      - key: MAX_TOKENS
+        value: 512
+      - key: TEMPERATURE
+        value: 0.5
+      - key: TOP_P
+        value: 0.95
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_API_KEYS
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: HUGGINGFACE_API_KEY
+        sync: false
+      - key: API_SECRET
+        generateValue: true
+      - key: BACKEND_URL
+        value: https://ai-hrms-backend.onrender.com
+      - key: CHROMA_DB_PATH
+        value: ./data/chroma_db
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: CHAT_API_BASE
+        value: https://z.ai/api/v1
+      - key: CHAT_MODEL
+        value: gpt-4o-mini
+    healthCheckPath: /health
+    autoDeploy: true
+
+  # Frontend Service
+  - type: web
+    name: ai-hrms-frontend
+    env: node
+    plan: free
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm run preview -- --port $PORT --host 0.0.0.0
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: VITE_API_URL
+        value: https://ai-hrms-backend.onrender.com/api
+    healthCheckPath: /
+    autoDeploy: true
