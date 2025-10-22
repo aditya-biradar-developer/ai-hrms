@@ -77,6 +77,13 @@ class JobDescriptionService:
                            skills: str) -> str:
         """Generate job description using GROQ AI"""
         
+        if not self.groq_api_key:
+            logger.error("❌ GROQ API key is not set")
+            raise Exception("GROQ API key is not configured")
+            
+        logger.info(f"🔑 Using GROQ API key: {self.groq_api_key[:10]}...")
+        logger.info(f"🎯 Using GROQ model: {self.groq_model}")
+        
         prompt = f"""Generate a professional job description for the position: {title}
 
 Requirements:
@@ -141,37 +148,51 @@ IMPORTANT:
 """
         
         try:
+            logger.info("🌐 Making request to GROQ API...")
+            api_url = f"{self.groq_api_base}/chat/completions"
+            headers = {
+                "Authorization": f"Bearer {self.groq_api_key}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "model": self.groq_model,
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are an expert HR professional and technical recruiter. Generate accurate, role-specific job descriptions."
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                "temperature": 0.7,
+                "max_tokens": 1500
+            }
+            
+            logger.info(f"📡 Sending request to: {api_url}")
+            logger.info(f"📦 Request payload: {json.dumps(payload)}")
+            
             response = requests.post(
-                f"{self.groq_api_base}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.groq_api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": self.groq_model,
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "You are an expert HR professional and technical recruiter. Generate accurate, role-specific job descriptions."
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    "temperature": 0.7,
-                    "max_tokens": 1500
-                },
+                api_url,
+                headers=headers,
+                json=payload,
                 timeout=30
             )
+            
+            logger.info(f"📥 Response status: {response.status_code}")
+            response_text = response.text
+            logger.info(f"📄 Response body: {response_text[:500]}...")
             
             if response.status_code == 200:
                 result = response.json()
                 jd_text = result['choices'][0]['message']['content'].strip()
+                logger.info("✅ Successfully generated job description")
                 return jd_text
             else:
-                logger.error(f"GROQ API error: {response.status_code}")
-                raise Exception(f"GROQ API returned {response.status_code}")
+                logger.error(f"❌ GROQ API error: {response.status_code}")
+                logger.error(f"❌ Error response: {response_text}")
+                raise Exception(f"GROQ API error: {response.status_code} - {response_text}")
                 
         except Exception as e:
             logger.error(f"GROQ generation failed: {str(e)}")
