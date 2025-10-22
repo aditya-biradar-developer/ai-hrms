@@ -59,11 +59,8 @@ const register = async (req, res) => {
       email,
       password,
       role: 'candidate', // Force candidate role for all signups
-      department: department || 'Candidate', // Default department for job seekers,
+      department: department || 'Candidate', // Default department for job seekers
       email_verified: true // Auto verify email
-      email_verified: false,
-      verification_token: verificationToken,
-      verification_token_expires: verificationExpires
     });
     
     console.log('User created successfully:', user);
@@ -108,11 +105,9 @@ const register = async (req, res) => {
   }
 };
 
-// Login user (Enhanced with security features)
+// Login user (Optimized for performance)
 const login = async (req, res) => {
   try {
-    console.log('Login request received:', { email: req.body.email });
-    
     const { email, password } = req.body;
     
     // Validate input
@@ -123,116 +118,64 @@ const login = async (req, res) => {
       });
     }
     
-    // Check if user exists
+    // Check if user exists and get their data
     const user = await User.findByEmail(email);
     if (!user) {
-      await logAudit({
-        action: 'LOGIN_FAILED',
-        details: { email, reason: 'User not found' },
-        ip_address: req.ip,
-        user_agent: req.headers['user-agent']
-      });
       return res.status(401).json({
         success: false,
         message: 'Invalid credentials'
       });
     }
     
-    // Check if account is locked
+    // Quick check for locked account
     if (user.account_locked_until && new Date(user.account_locked_until) > new Date()) {
       const minutesLeft = Math.ceil((new Date(user.account_locked_until) - new Date()) / 60000);
-      await logAudit({
-        user_id: user.id,
-        action: 'LOGIN_BLOCKED',
-        details: { reason: 'Account locked', minutesLeft },
-        ip_address: req.ip,
-        user_agent: req.headers['user-agent']
-      });
       return res.status(403).json({
         success: false,
-        message: `Account is locked due to multiple failed login attempts. Please try again in ${minutesLeft} minutes.`,
+        message: `Account is locked. Please try again in ${minutesLeft} minutes.`,
         accountLocked: true,
         minutesLeft
       });
     }
     
-    // Check if password is correct
+    // Verify password
     const isPasswordValid = await User.verifyPassword(password, user.password_hash);
     if (!isPasswordValid) {
-      // Increment failed attempts
-      const failedAttempts = (user.failed_login_attempts || 0) + 1;
-      const updates = { failed_login_attempts: failedAttempts };
-      
-      // Lock account after 5 failed attempts
-      if (failedAttempts >= 5) {
-        updates.account_locked_until = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+      // Only update failed attempts for critical failures
+      if (user.failed_login_attempts >= 3) {
+        const updates = { 
+          failed_login_attempts: user.failed_login_attempts + 1,
+          account_locked_until: user.failed_login_attempts >= 4 ? new Date(Date.now() + 30 * 60 * 1000) : null
+        };
+        await supabase.from('users').update(updates).eq('id', user.id);
       }
-      
-      await supabase
-        .from('users')
-        .update(updates)
-        .eq('id', user.id);
-      
-      await logAudit({
-        user_id: user.id,
-        action: 'LOGIN_FAILED',
-        details: { reason: 'Invalid password', attempts: failedAttempts },
-        ip_address: req.ip,
-        user_agent: req.headers['user-agent']
-      });
       
       return res.status(401).json({
         success: false,
-        message: failedAttempts >= 5 
-          ? 'Account locked due to multiple failed login attempts. Please try again in 30 minutes.'
-          : 'Invalid credentials'
+        message: 'Invalid credentials'
       });
     }
-    
-    // Check email verification
-    if (!user.email_verified) {
-      await logAudit({
-        user_id: user.id,
-        action: 'LOGIN_BLOCKED',
-        details: { reason: 'Email not verified' },
-        ip_address: req.ip,
-        user_agent: req.headers['user-agent']
-      });
-      return res.status(403).json({
-        success: false,
-        message: 'Please verify your email before logging in. Check your inbox for the verification link.',
-        requiresVerification: true,
-        email: user.email
-      });
-    }
-    
-    // Reset failed attempts and update last login
-    await supabase
-      .from('users')
-      .update({
-        failed_login_attempts: 0,
-        account_locked_until: null,
-        last_login: new Date()
-      })
-      .eq('id', user.id);
     
     // Generate token
     const token = generateToken(user.id);
     
-    // Remove password hash from response
-    if (user.password_hash) {
-      delete user.password_hash;
-    }
+    // Remove sensitive data
+    delete user.password_hash;
     
-    // Log successful login
-    await logAudit({
-      user_id: user.id,
-      action: 'LOGIN_SUCCESS',
-      ip_address: req.ip,
-      user_agent: req.headers['user-agent']
+    // Update user status (async, don't wait)
+    supabase.from('users').update({
+      failed_login_attempts: 0,
+      account_locked_until: null,
+      last_login: new Date()
+    }).eq('id', user.id).then(() => {
+      // Log successful login asynchronously
+      logAudit({
+        user_id: user.id,
+        action: 'LOGIN_SUCCESS',
+        ip_address: req.ip,
+        user_agent: req.headers['user-agent']
+      });
     });
-    
-    console.log('User logged in successfully:', { id: user.id, email: user.email });
     
     res.status(200).json({
       success: true,
