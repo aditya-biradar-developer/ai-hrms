@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Label } from '../components/ui/Label';
-import { Card } from '../components/ui/Card';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Label } from '../components/ui/label';
+import { Card } from '../components/ui/card';
 import { CheckCircle, Loader2, AlertCircle, Briefcase, Calendar, Building } from 'lucide-react';
 
 const Onboarding = () => {
