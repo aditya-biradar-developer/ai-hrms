@@ -10,7 +10,6 @@ import {
   MapPin, 
   Brain, 
   MessageCircle, 
-  Users, 
   Plus,
   Settings,
   CheckCircle,
@@ -48,11 +47,6 @@ const InterviewRoundScheduler = ({
       skills: ['listening', 'speaking', 'reading'],
       timeLimit: 30, // minutes
       topics: []
-    },
-    hr: {
-      location: 'office',
-      interviewer: '',
-      topics: ['company_culture', 'compensation', 'background_check']
     }
   });
 
@@ -77,14 +71,6 @@ const InterviewRoundScheduler = ({
       icon: MessageCircle,
       color: 'from-blue-500 to-cyan-600',
       features: ['Voice Recognition', 'Listening Tests', 'Speaking Evaluation', 'Reading Comprehension']
-    },
-    {
-      id: 'hr',
-      name: 'HR Round',
-      description: 'Human resource interview conducted by HR team at office location',
-      icon: Users,
-      color: 'from-gray-500 to-slate-600',
-      features: ['Human Interviewer', 'Office Location', 'Culture Fit', 'Final Assessment']
     }
   ];
 
@@ -300,78 +286,6 @@ const InterviewRoundScheduler = ({
           </Card>
         );
 
-      case 'hr':
-        return (
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                HR Round Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Interview Location</Label>
-                <Input
-                  type="text"
-                  placeholder="e.g., Conference Room A, HR Office"
-                  value={roundConfig.hr.location}
-                  onChange={(e) => setRoundConfig(prev => ({
-                    ...prev,
-                    hr: { ...prev.hr, location: e.target.value }
-                  }))}
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label>HR Interviewer</Label>
-                <Input
-                  type="text"
-                  placeholder="e.g., John Smith, HR Manager"
-                  value={roundConfig.hr.interviewer}
-                  onChange={(e) => setRoundConfig(prev => ({
-                    ...prev,
-                    hr: { ...prev.hr, interviewer: e.target.value }
-                  }))}
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label>Discussion Topics</Label>
-                <div className="grid grid-cols-1 gap-2 mt-2">
-                  {[
-                    { id: 'company_culture', name: 'Company Culture & Values' },
-                    { id: 'compensation', name: 'Compensation & Benefits' },
-                    { id: 'background_check', name: 'Background Verification' },
-                    { id: 'career_growth', name: 'Career Growth Opportunities' },
-                    { id: 'work_life_balance', name: 'Work-Life Balance' }
-                  ].map(topic => (
-                    <label key={topic.id} className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={roundConfig.hr.topics.includes(topic.id)}
-                        onChange={(e) => {
-                          const topics = e.target.checked
-                            ? [...roundConfig.hr.topics, topic.id]
-                            : roundConfig.hr.topics.filter(t => t !== topic.id);
-                          setRoundConfig(prev => ({
-                            ...prev,
-                            hr: { ...prev.hr, topics }
-                          }));
-                        }}
-                        className="rounded"
-                      />
-                      <div className="font-medium text-sm">{topic.name}</div>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        );
-
       default:
         return null;
     }
@@ -481,17 +395,11 @@ const InterviewRoundScheduler = ({
                 </div>
 
                 <div>
-                  <Label htmlFor="interview_location">
-                    {selectedRound === 'hr' ? 'Office Location' : 'Interview Location'}
-                  </Label>
+                  <Label htmlFor="interview_location">Interview Location</Label>
                   <Input
                     id="interview_location"
                     type="text"
-                    placeholder={
-                      selectedRound === 'hr' 
-                        ? "e.g., Main Office, Conference Room A"
-                        : "Virtual Assessment"
-                    }
+                    placeholder="Virtual Assessment"
                     value={interviewData.interview_location}
                     onChange={(e) => setInterviewData({ ...interviewData, interview_location: e.target.value })}
                     className="mt-1"

@@ -2562,8 +2562,7 @@ Current Status: ${application.status}
           <div className="grid grid-cols-2 gap-3 mt-3">
             {[
               { id: 'aptitude', name: 'Aptitude Assessment', icon: '🧠', desc: 'MCQ tests - logical, quantitative & verbal', color: 'from-purple-500 to-indigo-600' },
-              { id: 'communication', name: 'Communication Assessment', icon: '💬', desc: 'Voice-based speaking & listening', color: 'from-blue-500 to-cyan-600' },
-              { id: 'hr', name: 'HR Round', icon: '👥', desc: 'Human interview at office', color: 'from-gray-500 to-slate-600' }
+              { id: 'communication', name: 'Communication Assessment', icon: '💬', desc: 'Voice-based speaking & listening', color: 'from-blue-500 to-cyan-600' }
             ].map(round => (
               <div
                 key={round.id}
@@ -2666,18 +2665,6 @@ Current Status: ${application.status}
               <Sparkles className="h-4 w-4 mr-2" />
               {customQuestions.length > 0 ? 'Edit Communication Challenges' : 'Generate Communication Challenges with AI'}
             </Button>
-          </div>
-        )}
-
-        {interviewData.interview_type === 'hr' && (
-          <div className="bg-gradient-to-r from-gray-50 to-slate-50 border-2 border-gray-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Bot className="h-5 w-5 text-gray-600" />
-              <h3 className="font-semibold text-gray-900">HR Round Details</h3>
-            </div>
-            <p className="text-sm text-gray-600">
-              Human-conducted interviews for all {validCandidateCount} candidates. No AI generation needed.
-            </p>
           </div>
         )}
 
