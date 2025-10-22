@@ -52,10 +52,6 @@ const register = async (req, res) => {
       });
     }
     
-    // Generate verification token
-    const verificationToken = generateRandomToken();
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-    
     // SECURITY: All new signups are 'candidate' by default
     // Only admins can change roles later
     const user = await User.create({
@@ -63,7 +59,8 @@ const register = async (req, res) => {
       email,
       password,
       role: 'candidate', // Force candidate role for all signups
-      department: department || 'Candidate', // Default department for job seekers
+      department: department || 'Candidate', // Default department for job seekers,
+      email_verified: true // Auto verify email
       email_verified: false,
       verification_token: verificationToken,
       verification_token_expires: verificationExpires
@@ -89,12 +86,16 @@ const register = async (req, res) => {
       details: { email, role: 'candidate' }
     });
     
+    // Generate token for auto-login
+    const token = generateToken(user.id);
+    
     res.status(201).json({
       success: true,
-      message: 'Registration successful! Please check your email to verify your account.',
+      message: 'Registration successful! You can now log in.',
       data: {
         email: user.email,
-        requiresVerification: true
+        token: token,
+        user: user
       }
     });
   } catch (error) {

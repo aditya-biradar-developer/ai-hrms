@@ -101,8 +101,13 @@ const RegisterForm = () => {
   };
 
 
-  // Show success message if registration requires verification
+  // Show success message and redirect to login
   if (registrationSuccess) {
+    // Redirect to login after 2 seconds
+    setTimeout(() => {
+      navigate('/login');
+    }, 2000);
+    
     return (
       <Card className="w-full max-w-md mx-auto">
         <CardHeader className="space-y-1">
@@ -117,33 +122,14 @@ const RegisterForm = () => {
             Registration Successful!
           </CardTitle>
           <CardDescription className="text-center">
-            Please check your email to verify your account
+            Redirecting you to login...
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-800 text-center">
-              We've sent a verification email to <strong>{registeredEmail}</strong>
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-sm text-green-800 text-center">
+              Account created successfully! You can now log in with your email and password.
             </p>
-            <p className="text-sm text-blue-600 text-center mt-2">
-              Click the link in the email to activate your account.
-            </p>
-          </div>
-          
-          <div className="space-y-2">
-            <p className="text-xs text-gray-600 text-center">
-              Didn't receive the email? Check your spam folder or
-            </p>
-            <Button 
-              variant="outline" 
-              className="w-full"
-              onClick={() => {
-                // TODO: Implement resend verification
-                alert('Resend verification email feature coming soon!');
-              }}
-            >
-              Resend Verification Email
-            </Button>
           </div>
 
           <Button 
