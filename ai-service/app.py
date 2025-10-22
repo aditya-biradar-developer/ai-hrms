@@ -188,15 +188,39 @@ def generate_job_description():
     """
     try:
         data = request.json
+        if not data:
+            logger.error("No JSON data provided in request")
+            return jsonify({'error': 'No data provided'}), 400
+            
+        # Validate required fields
+        required_fields = ['title']
+        missing_fields = [field for field in required_fields if field not in data]
+        if missing_fields:
+            error_msg = f"Missing required fields: {', '.join(missing_fields)}"
+            logger.error(error_msg)
+            return jsonify({'error': error_msg}), 400
+            
+        logger.info(f"Generating job description for: {data.get('title')}")
         result = job_description_service.generate(data)
+        
+        # Log success with generated content length
+        logger.info(f"Successfully generated job description ({len(str(result))} chars)")
         
         return jsonify({
             'success': True,
             'data': result
         })
     except Exception as e:
-        logger.error(f"Error generating job description: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        error_msg = str(e)
+        logger.error(f"Error generating job description: {error_msg}", exc_info=True)
+        
+        # Check for specific error types and return appropriate status codes
+        if "API key" in error_msg.lower():
+            return jsonify({'error': 'AI service configuration error'}), 503
+        elif "timeout" in error_msg.lower():
+            return jsonify({'error': 'AI service timeout'}), 504
+        else:
+            return jsonify({'error': 'Failed to generate job description'}), 500
 
 @app.route('/api/ai/email/generate', methods=['POST'])
 def generate_email():

@@ -13,14 +13,23 @@ logger = logging.getLogger(__name__)
 class JobDescriptionService:
     def __init__(self, llm_service):
         self.llm = llm_service
+        
+        # Get primary and fallback API keys
         self.groq_api_key = os.getenv('GROQ_API_KEY')
+        self.groq_api_keys = os.getenv('GROQ_API_KEYS', '').split(',') if os.getenv('GROQ_API_KEYS') else []
         self.groq_api_base = "https://api.groq.com/openai/v1"
         self.groq_model = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
         
+        # Use primary key or first available backup key
+        if not self.groq_api_key and self.groq_api_keys:
+            self.groq_api_key = self.groq_api_keys[0].strip()
+            logger.info("✅ Using fallback GROQ API key")
+        
         if self.groq_api_key:
-            logger.info("✅ JobDescriptionService initialized with GROQ AI")
+            logger.info(f"✅ JobDescriptionService initialized with GROQ AI (Model: {self.groq_model})")
+            logger.info(f"📚 Available backup API keys: {len(self.groq_api_keys)}")
         else:
-            logger.warning("⚠️ No GROQ API key, will use templates")
+            logger.warning("⚠️ No GROQ API key available, will use templates")
     
     def generate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -75,13 +84,29 @@ class JobDescriptionService:
     def _generate_with_groq(self, title: str, department: str, 
                            experience_level: str, employment_type: str, 
                            skills: str) -> str:
-        """Generate job description using GROQ AI"""
+        """Generate job description using GROQ AI with fallback support"""
         
-        if not self.groq_api_key:
-            logger.error("❌ GROQ API key is not set")
-            raise Exception("GROQ API key is not configured")
+        def try_generate_with_key(api_key: str) -> dict:
+            """Helper function to try generation with a specific API key"""
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json"
+            }
+            api_url = f"{self.groq_api_base}/chat/completions"
+            response = requests.post(
+                api_url,
+                headers=headers,
+                json=payload,
+                timeout=30
+            )
+            return response.json() if response.status_code == 200 else None
+        
+        if not self.groq_api_key and not self.groq_api_keys:
+            error_msg = "No GROQ API keys available"
+            logger.error(f"❌ {error_msg}")
+            raise Exception(error_msg)
             
-        logger.info(f"🔑 Using GROQ API key: {self.groq_api_key[:10]}...")
+        logger.info(f"🔑 Attempting generation with primary API key: {self.groq_api_key[:10]}...")
         logger.info(f"🎯 Using GROQ model: {self.groq_model}")
         
         prompt = f"""Generate a professional job description for the position: {title}
@@ -148,12 +173,7 @@ IMPORTANT:
 """
         
         try:
-            logger.info("🌐 Making request to GROQ API...")
-            api_url = f"{self.groq_api_base}/chat/completions"
-            headers = {
-                "Authorization": f"Bearer {self.groq_api_key}",
-                "Content-Type": "application/json"
-            }
+            logger.info("🌐 Preparing GROQ API request...")
             payload = {
                 "model": self.groq_model,
                 "messages": [
@@ -170,32 +190,39 @@ IMPORTANT:
                 "max_tokens": 1500
             }
             
-            logger.info(f"📡 Sending request to: {api_url}")
-            logger.info(f"📦 Request payload: {json.dumps(payload)}")
+            logger.info(f"📡 API endpoint: {self.groq_api_base}/chat/completions")
+            logger.debug(f"📦 Request payload: {json.dumps(payload)}")  # Debug level to avoid logging in production
             
-            response = requests.post(
-                api_url,
-                headers=headers,
-                json=payload,
-                timeout=30
-            )
+            # Try primary key first
+            result = try_generate_with_key(self.groq_api_key)
             
-            logger.info(f"📥 Response status: {response.status_code}")
-            response_text = response.text
-            logger.info(f"📄 Response body: {response_text[:500]}...")
+            # If primary key fails, try backup keys
+            if not result and self.groq_api_keys:
+                logger.warning("⚠️ Primary API key failed, trying backup keys...")
+                for backup_key in self.groq_api_keys:
+                    if backup_key.strip() != self.groq_api_key:  # Skip if same as primary
+                        try:
+                            logger.info(f"� Trying backup key: {backup_key[:10]}...")
+                            result = try_generate_with_key(backup_key.strip())
+                            if result:
+                                logger.info("✅ Successfully generated with backup key")
+                                break
+                        except Exception as e:
+                            logger.warning(f"⚠️ Backup key failed: {str(e)}")
+                            continue
             
-            if response.status_code == 200:
-                result = response.json()
-                jd_text = result['choices'][0]['message']['content'].strip()
-                logger.info("✅ Successfully generated job description")
-                return jd_text
-            else:
-                logger.error(f"❌ GROQ API error: {response.status_code}")
-                logger.error(f"❌ Error response: {response_text}")
-                raise Exception(f"GROQ API error: {response.status_code} - {response_text}")
+            if not result:
+                error_msg = "All API keys failed to generate job description"
+                logger.error(f"❌ {error_msg}")
+                raise Exception(error_msg)
+            
+            jd_text = result['choices'][0]['message']['content'].strip()
+            logger.info(f"✅ Successfully generated job description ({len(jd_text)} chars)")
+            return jd_text
                 
         except Exception as e:
-            logger.error(f"GROQ generation failed: {str(e)}")
+            logger.error(f"❌ GROQ generation failed: {str(e)}")
+            logger.error("⚠️ Falling back to template-based generation")
             raise
     
     def _generate_template_based(self, title: str, department: str, 
