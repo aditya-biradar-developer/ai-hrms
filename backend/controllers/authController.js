@@ -28,20 +28,10 @@ const logAudit = async (data) => {
   }
 };
 
-// Register user (Enhanced with email verification)
+// Register user
 const register = async (req, res) => {
   try {
-    console.log('Registration request received:', req.body);
-    
     const { name, email, password, department } = req.body;
-    
-    // Validate input
-    if (!name || !email || !password) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide all required fields'
-      });
-    }
     
     // Check if user already exists
     const existingUser = await User.findByEmail(email);
@@ -52,18 +42,19 @@ const register = async (req, res) => {
       });
     }
     
-    // SECURITY: All new signups are 'candidate' by default
-    // Only admins can change roles later
+    // Create the user
     const user = await User.create({
       name,
       email,
       password,
-      role: 'candidate', // Force candidate role for all signups
-      department: department || 'Candidate', // Default department for job seekers
-      email_verified: true // Auto verify email
+      role: 'candidate',
+      department: department || 'Candidate',
+      email_verified: true
     });
     
-    console.log('User created successfully:', user);
+    if (!user) {
+      throw new Error('Failed to create user');
+    }
     
     // Send verification email
     const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;

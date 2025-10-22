@@ -5,6 +5,10 @@ class User {
   // Create a new user
   static async create(userData) {
     try {
+      if (!userData.email || !userData.name) {
+        throw new Error('Email and name are required');
+      }
+
       // Hash password only if provided (OAuth users don't have passwords)
       let hashedPassword = null;
       if (userData.password) {
@@ -17,12 +21,10 @@ class User {
         name: userData.name,
         email: userData.email,
         password_hash: hashedPassword,
-        role: userData.role,
-        department: userData.department,
-        start_date: userData.start_date || null,
-        email_verified: userData.email_verified || false,
-        verification_token: userData.verification_token || null,
-        verification_token_expires: userData.verification_token_expires || null
+        role: userData.role || 'candidate',
+        department: userData.department || 'Candidate',
+        email_verified: true,
+        created_at: new Date()
       };
 
       // Add google_id if provided
