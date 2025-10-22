@@ -6,6 +6,7 @@ import logging
 import os
 import requests
 import json
+import time
 from typing import Dict, List, Any
 
 logger = logging.getLogger(__name__)
@@ -13,14 +14,50 @@ logger = logging.getLogger(__name__)
 class JobDescriptionService:
     def __init__(self, llm_service):
         self.llm = llm_service
-        self.groq_api_key = os.getenv('GROQ_API_KEY')
+        
+        # Load multiple API keys for rotation (same as question generator)
+        self.api_keys = []
+        
+        # Primary API key
+        primary_key = os.getenv('GROQ_API_KEY')
+        if primary_key:
+            self.api_keys.append(primary_key)
+        
+        # Additional API keys from comma-separated list
+        additional_keys = os.getenv('GROQ_API_KEYS', '')
+        if additional_keys:
+            keys_list = [key.strip() for key in additional_keys.split(',') if key.strip()]
+            # Remove duplicates and add to list
+            for key in keys_list:
+                if key not in self.api_keys:
+                    self.api_keys.append(key)
+        
+        self.current_key_index = 0
         self.groq_api_base = "https://api.groq.com/openai/v1"
         self.groq_model = os.getenv('GROQ_MODEL', 'llama-3.3-70b-versatile')
         
-        if self.groq_api_key:
-            logger.info("✅ JobDescriptionService initialized with GROQ AI")
+        if self.api_keys:
+            logger.info(f"✅ JobDescriptionService initialized with {len(self.api_keys)} GROQ API keys")
         else:
-            logger.warning("⚠️ No GROQ API key, will use templates")
+            logger.warning("⚠️ No GROQ API keys found, will use templates")
+    
+    def get_current_api_key(self):
+        """Get the current API key"""
+        if not self.api_keys:
+            return None
+        return self.api_keys[self.current_key_index]
+    
+    def rotate_api_key(self):
+        """Rotate to the next API key"""
+        if len(self.api_keys) <= 1:
+            logger.warning("⚠️ No additional API keys available for rotation")
+            return False
+        
+        old_index = self.current_key_index
+        self.current_key_index = (self.current_key_index + 1) % len(self.api_keys)
+        
+        logger.info(f"🔄 Rotated API key from index {old_index} to {self.current_key_index}")
+        return True
     
     def generate(self, data: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -47,7 +84,7 @@ class JobDescriptionService:
         skills_str = ", ".join(skills) if skills else "relevant technical skills"
         
         # Try GROQ AI first for accurate, role-specific JDs
-        if self.groq_api_key:
+        if self.api_keys:
             try:
                 logger.info(f"🚀 Generating JD for '{title}' using GROQ AI...")
                 response = self._generate_with_groq(title, department, experience_level, employment_type, skills_str)
@@ -75,7 +112,7 @@ class JobDescriptionService:
     def _generate_with_groq(self, title: str, department: str, 
                            experience_level: str, employment_type: str, 
                            skills: str) -> str:
-        """Generate job description using GROQ AI"""
+        """Generate job description using GROQ AI with multiple API key rotation"""
         
         prompt = f"""Generate a professional job description for the position: {title}
 
@@ -140,42 +177,72 @@ IMPORTANT:
 - Follow the exact format above with separators
 """
         
-        try:
-            response = requests.post(
-                f"{self.groq_api_base}/chat/completions",
-                headers={
-                    "Authorization": f"Bearer {self.groq_api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": self.groq_model,
-                    "messages": [
-                        {
-                            "role": "system",
-                            "content": "You are an expert HR professional and technical recruiter. Generate accurate, role-specific job descriptions."
-                        },
-                        {
-                            "role": "user",
-                            "content": prompt
-                        }
-                    ],
-                    "temperature": 0.7,
-                    "max_tokens": 1500
-                },
-                timeout=30
-            )
+        # API key rotation with retry logic (same as question generator)
+        max_key_attempts = len(self.api_keys)
+        max_retries_per_key = 2
+        
+        for key_attempt in range(max_key_attempts):
+            current_api_key = self.get_current_api_key()
+            logger.info(f"🔑 Using API key {self.current_key_index + 1}/{len(self.api_keys)} for job description")
             
-            if response.status_code == 200:
-                result = response.json()
-                jd_text = result['choices'][0]['message']['content'].strip()
-                return jd_text
-            else:
-                logger.error(f"GROQ API error: {response.status_code}")
-                raise Exception(f"GROQ API returned {response.status_code}")
-                
-        except Exception as e:
-            logger.error(f"GROQ generation failed: {str(e)}")
-            raise
+            for retry in range(max_retries_per_key):
+                try:
+                    response = requests.post(
+                        f"{self.groq_api_base}/chat/completions",
+                        headers={
+                            "Authorization": f"Bearer {current_api_key}",
+                            "Content-Type": "application/json"
+                        },
+                        json={
+                            "model": self.groq_model,
+                            "messages": [
+                                {
+                                    "role": "system",
+                                    "content": "You are an expert HR professional and technical recruiter. Generate accurate, role-specific job descriptions."
+                                },
+                                {
+                                    "role": "user",
+                                    "content": prompt
+                                }
+                            ],
+                            "temperature": 0.7,
+                            "max_tokens": 1500
+                        },
+                        timeout=30
+                    )
+                    
+                    if response.status_code == 200:
+                        result = response.json()
+                        jd_text = result['choices'][0]['message']['content'].strip()
+                        logger.info(f"✅ Job description generated successfully with API key {self.current_key_index + 1}")
+                        return jd_text
+                    elif response.status_code == 429:
+                        logger.warning(f"⚠️ Rate limit hit on API key {self.current_key_index + 1}, attempt {retry + 1}")
+                        if retry < max_retries_per_key - 1:
+                            time.sleep(2)  # Wait before retry
+                        continue
+                    else:
+                        logger.error(f"❌ GROQ API error: {response.status_code}")
+                        raise Exception(f"GROQ API returned {response.status_code}")
+                        
+                except requests.exceptions.Timeout:
+                    logger.warning(f"⚠️ Timeout on API key {self.current_key_index + 1}, attempt {retry + 1}")
+                    if retry < max_retries_per_key - 1:
+                        time.sleep(1)
+                    continue
+                except Exception as e:
+                    logger.error(f"❌ Request failed on API key {self.current_key_index + 1}: {str(e)}")
+                    if retry < max_retries_per_key - 1:
+                        time.sleep(1)
+                    continue
+            
+            # Rotate to next API key if current one failed
+            if key_attempt < max_key_attempts - 1:
+                self.rotate_api_key()
+        
+        # If all keys failed
+        logger.error(f"❌ All {len(self.api_keys)} API keys failed for job description generation")
+        raise Exception(f"All {len(self.api_keys)} GROQ API keys failed")
     
     def _generate_template_based(self, title: str, department: str, 
                                   experience_level: str, employment_type: str, 
