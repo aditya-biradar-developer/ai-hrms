@@ -2562,9 +2562,7 @@ Current Status: ${application.status}
           <div className="grid grid-cols-2 gap-3 mt-3">
             {[
               { id: 'aptitude', name: 'Aptitude Assessment', icon: '🧠', desc: 'MCQ tests - logical, quantitative & verbal', color: 'from-purple-500 to-indigo-600' },
-              { id: 'coding', name: 'Coding Challenge', icon: '💻', desc: 'DSA problems with live code editor', color: 'from-green-500 to-teal-600' },
               { id: 'communication', name: 'Communication Assessment', icon: '💬', desc: 'Voice-based speaking & listening', color: 'from-blue-500 to-cyan-600' },
-              { id: 'faceToFace', name: 'AI Interview', icon: '🎥', desc: 'Interactive AI interviewer', color: 'from-orange-500 to-red-600' },
               { id: 'hr', name: 'HR Round', icon: '👥', desc: 'Human interview at office', color: 'from-gray-500 to-slate-600' }
             ].map(round => (
               <div
@@ -2647,30 +2645,6 @@ Current Status: ${application.status}
           </div>
         )}
 
-        {interviewData.interview_type === 'coding' && (
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 border-2 border-green-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Bot className="h-5 w-5 text-green-600" />
-              <h3 className="font-semibold text-gray-900">Coding Challenge Setup</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-3">
-              {customQuestions.length > 0 
-                ? `✅ ${customQuestions.length} problems configured • Same for all ${validCandidateCount} candidates`
-                : `Generate DSA problems for all ${validCandidateCount} candidates`}
-            </p>
-            <Button
-              onClick={() => {
-                setCurrentRoundType('coding');
-                setShowRoundGenerator(true);
-              }}
-              className="bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white"
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              {customQuestions.length > 0 ? 'Edit Coding Problems' : 'Generate Coding Problems with AI'}
-            </Button>
-          </div>
-        )}
-
         {interviewData.interview_type === 'communication' && (
           <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-4">
             <div className="flex items-center gap-2 mb-3">
@@ -2691,30 +2665,6 @@ Current Status: ${application.status}
             >
               <Sparkles className="h-4 w-4 mr-2" />
               {customQuestions.length > 0 ? 'Edit Communication Challenges' : 'Generate Communication Challenges with AI'}
-            </Button>
-          </div>
-        )}
-
-        {interviewData.interview_type === 'faceToFace' && (
-          <div className="bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Bot className="h-5 w-5 text-orange-600" />
-              <h3 className="font-semibold text-gray-900">AI Interview Questions</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-3">
-              {customQuestions.length > 0 
-                ? `✅ ${customQuestions.length} questions • Same AI interview for all ${validCandidateCount} candidates`
-                : `Generate interview questions for all ${validCandidateCount} candidates`}
-            </p>
-            <Button
-              onClick={() => {
-                setCurrentRoundType('faceToFace');
-                setShowRoundGenerator(true);
-              }}
-              className="bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700 text-white"
-            >
-              <Sparkles className="h-4 w-4 mr-2" />
-              {customQuestions.length > 0 ? 'Edit Interview Questions' : 'Generate Interview Questions with AI'}
             </Button>
           </div>
         )}

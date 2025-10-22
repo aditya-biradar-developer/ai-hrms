@@ -9,9 +9,7 @@ import {
   Clock, 
   MapPin, 
   Brain, 
-  Code, 
   MessageCircle, 
-  Video, 
   Users, 
   Plus,
   Settings,
@@ -46,21 +44,10 @@ const InterviewRoundScheduler = ({
       timePerQuestion: 60, // seconds
       difficulty: 'medium'
     },
-    coding: {
-      problems: [],
-      difficulty: 'medium',
-      timeLimit: 90, // minutes
-      language: 'javascript'
-    },
     communication: {
       skills: ['listening', 'speaking', 'reading'],
       timeLimit: 30, // minutes
       topics: []
-    },
-    faceToFace: {
-      questions: [],
-      aiPersonality: 'professional',
-      duration: 45 // minutes
     },
     hr: {
       location: 'office',
@@ -84,28 +71,12 @@ const InterviewRoundScheduler = ({
       features: ['MCQ Format', 'Topic-wise Questions', 'Auto-scoring', 'Time-bound']
     },
     {
-      id: 'coding',
-      name: 'Coding Challenge',
-      description: 'Data structures and algorithms problems with live code editor',
-      icon: Code,
-      color: 'from-green-500 to-teal-600',
-      features: ['DSA Problems', 'Live Editor', 'Multiple Languages', 'Test Cases']
-    },
-    {
       id: 'communication',
       name: 'Communication Assessment',
       description: 'Voice-based evaluation of listening, speaking, and reading skills',
       icon: MessageCircle,
       color: 'from-blue-500 to-cyan-600',
       features: ['Voice Recognition', 'Listening Tests', 'Speaking Evaluation', 'Reading Comprehension']
-    },
-    {
-      id: 'faceToFace',
-      name: 'AI Interview',
-      description: 'Interactive AI-powered interview with role-specific questions',
-      icon: Video,
-      color: 'from-orange-500 to-red-600',
-      features: ['AI Interviewer', 'Role-based Questions', 'Natural Conversation', 'Video Recording']
     },
     {
       id: 'hr',
@@ -123,20 +94,6 @@ const InterviewRoundScheduler = ({
     { id: 'verbal_ability', name: 'Verbal Ability', description: 'Grammar, vocabulary, reading comprehension' },
     { id: 'technical_aptitude', name: 'Technical Aptitude', description: 'Basic programming concepts, algorithms' },
     { id: 'analytical_thinking', name: 'Analytical Thinking', description: 'Problem solving, critical thinking' }
-  ];
-
-  const codingDifficulties = [
-    { id: 'easy', name: 'Easy', description: 'Basic problems, simple algorithms' },
-    { id: 'medium', name: 'Medium', description: 'Intermediate problems, data structures' },
-    { id: 'hard', name: 'Hard', description: 'Complex algorithms, optimization' }
-  ];
-
-  const programmingLanguages = [
-    { id: 'javascript', name: 'JavaScript' },
-    { id: 'python', name: 'Python' },
-    { id: 'java', name: 'Java' },
-    { id: 'cpp', name: 'C++' },
-    { id: 'c', name: 'C' }
   ];
 
   const communicationTopics = [
@@ -247,85 +204,6 @@ const InterviewRoundScheduler = ({
           </Card>
         );
 
-      case 'coding':
-        return (
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Coding Challenge Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Difficulty Level</Label>
-                  <select
-                    value={roundConfig.coding.difficulty}
-                    onChange={(e) => setRoundConfig(prev => ({
-                      ...prev,
-                      coding: { ...prev.coding, difficulty: e.target.value }
-                    }))}
-                    className="w-full mt-1 p-2 border rounded-md"
-                  >
-                    {codingDifficulties.map(diff => (
-                      <option key={diff.id} value={diff.id}>{diff.name} - {diff.description}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label>Time Limit (minutes)</Label>
-                  <Input
-                    type="number"
-                    min="30"
-                    max="180"
-                    value={roundConfig.coding.timeLimit}
-                    onChange={(e) => setRoundConfig(prev => ({
-                      ...prev,
-                      coding: { ...prev.coding, timeLimit: parseInt(e.target.value) || 90 }
-                    }))}
-                    className="mt-1"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label>Programming Language</Label>
-                <select
-                  value={roundConfig.coding.language}
-                  onChange={(e) => setRoundConfig(prev => ({
-                    ...prev,
-                    coding: { ...prev.coding, language: e.target.value }
-                  }))}
-                  className="w-full mt-1 p-2 border rounded-md"
-                >
-                  {programmingLanguages.map(lang => (
-                    <option key={lang.id} value={lang.id}>{lang.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <Button
-                onClick={() => generateQuestions('coding')}
-                disabled={generatingQuestions}
-                className="w-full"
-              >
-                {generatingQuestions ? (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                    Generating Problems...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Generate DSA Problems
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        );
-
       case 'communication':
         return (
           <Card className="mt-4">
@@ -415,69 +293,6 @@ const InterviewRoundScheduler = ({
                   <>
                     <Plus className="w-4 h-4 mr-2" />
                     Generate Communication Challenges
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        );
-
-      case 'faceToFace':
-        return (
-          <Card className="mt-4">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                AI Interview Configuration
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>AI Interviewer Personality</Label>
-                <select
-                  value={roundConfig.faceToFace.aiPersonality}
-                  onChange={(e) => setRoundConfig(prev => ({
-                    ...prev,
-                    faceToFace: { ...prev.faceToFace, aiPersonality: e.target.value }
-                  }))}
-                  className="w-full mt-1 p-2 border rounded-md"
-                >
-                  <option value="professional">Professional & Formal</option>
-                  <option value="friendly">Friendly & Conversational</option>
-                  <option value="technical">Technical & Detail-oriented</option>
-                  <option value="senior">Senior Executive Style</option>
-                </select>
-              </div>
-
-              <div>
-                <Label>Interview Duration (minutes)</Label>
-                <Input
-                  type="number"
-                  min="15"
-                  max="90"
-                  value={roundConfig.faceToFace.duration}
-                  onChange={(e) => setRoundConfig(prev => ({
-                    ...prev,
-                    faceToFace: { ...prev.faceToFace, duration: parseInt(e.target.value) || 45 }
-                  }))}
-                  className="mt-1"
-                />
-              </div>
-
-              <Button
-                onClick={() => generateQuestions('faceToFace')}
-                disabled={generatingQuestions}
-                className="w-full"
-              >
-                {generatingQuestions ? (
-                  <>
-                    <Sparkles className="w-4 h-4 mr-2 animate-spin" />
-                    Generating Questions...
-                  </>
-                ) : (
-                  <>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Generate Role-based Questions
                   </>
                 )}
               </Button>
@@ -675,8 +490,6 @@ const InterviewRoundScheduler = ({
                     placeholder={
                       selectedRound === 'hr' 
                         ? "e.g., Main Office, Conference Room A"
-                        : selectedRound === 'faceToFace'
-                        ? "Virtual (AI Interview)"
                         : "Virtual Assessment"
                     }
                     value={interviewData.interview_location}
