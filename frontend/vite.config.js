@@ -8,6 +8,9 @@ export default defineConfig({
     port: 3000,
     host: true,
   },
+  preview: {
+    allowedHosts: ['ai-hrms-frontend.onrender.com']
+  },
   optimizeDeps: {
     include: ['lucide-react']
   }
